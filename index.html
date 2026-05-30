@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>見積書・請求書 自動生成</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Invoice Studio</p>
+          <h1>見積書・請求書 自動生成</h1>
+          <p class="lead">クライアント名と金額を入れるだけで、見積書と請求書を同時に作成。</p>
+        </div>
+        <div class="doc-status" id="status">READY</div>
+      </header>
+
+      <section class="layout">
+        <form class="control-panel" id="invoiceForm">
+          <div class="section-title">
+            <span>01</span>
+            <h2>案件情報</h2>
+          </div>
+          <label>
+            <span>クライアント名</span>
+            <input name="client" value="株式会社ラッキーマイン" />
+          </label>
+          <label>
+            <span>案件名</span>
+            <input name="project" value="AI副業講座 LP改善支援" />
+          </label>
+          <div class="input-grid">
+            <label>
+              <span>金額</span>
+              <input name="amount" type="number" value="300000" />
+            </label>
+            <label>
+              <span>税率</span>
+              <select name="tax">
+                <option value="0.1">10%</option>
+                <option value="0.08">8%</option>
+                <option value="0">なし</option>
+              </select>
+            </label>
+          </div>
+          <div class="input-grid">
+            <label>
+              <span>発行日</span>
+              <input name="issueDate" type="date" />
+            </label>
+            <label>
+              <span>支払期限</span>
+              <input name="dueDate" type="date" />
+            </label>
+          </div>
+          <label>
+            <span>作業内容</span>
+            <textarea name="items" rows="6">競合調査
+LP構成改善
+AI導線設計
+改善レポート作成</textarea>
+          </label>
+          <div class="actions">
+            <button class="secondary" type="button" id="sampleButton">サンプル入力</button>
+            <button type="submit">書類を生成</button>
+          </div>
+        </form>
+
+        <section class="preview-area">
+          <article class="paper" id="estimateDoc"></article>
+          <article class="paper invoice-paper" id="invoiceDoc"></article>
+        </section>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
