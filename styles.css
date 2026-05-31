@@ -76,6 +76,31 @@ h2 { font-size: 18px; }
   font-size: 16px;
 }
 
+.privacy-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 760px;
+  margin-top: 14px;
+  border: 1px solid #d7e6e2;
+  border-radius: 8px;
+  background: #f4fbf9;
+  color: #48635d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 10px 12px;
+}
+
+.privacy-note button {
+  min-height: 32px;
+  flex: 0 0 auto;
+  background: #dcefeb;
+  color: var(--green);
+  font-size: 12px;
+  padding: 0 10px;
+}
+
 .doc-status {
   border: 1px solid #bdd1cc;
   border-radius: 999px;
@@ -339,6 +364,7 @@ textarea {
   .hero, .layout { display: grid; grid-template-columns: 1fr; }
   .control-panel { position: static; }
   .line-row, .note-grid { grid-template-columns: 1fr; }
+  .privacy-note { align-items: stretch; flex-direction: column; }
 }
 
 @media print {

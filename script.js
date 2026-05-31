@@ -7,6 +7,7 @@ const sampleButton = document.querySelector("#sampleButton");
 const copyButton = document.querySelector("#copyButton");
 const printButton = document.querySelector("#printButton");
 const addLineButton = document.querySelector("#addLineButton");
+const clearDataButton = document.querySelector("#clearDataButton");
 const lineEditor = document.querySelector("#lineEditor");
 const tabButtons = document.querySelectorAll(".tab");
 
@@ -204,6 +205,10 @@ sampleButton.addEventListener("click", () => {
 
 copyButton.addEventListener("click", copySummary);
 printButton.addEventListener("click", () => window.print());
+clearDataButton.addEventListener("click", () => {
+  localStorage.removeItem(STORAGE_KEY);
+  status.textContent = "CLEARED";
+});
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
