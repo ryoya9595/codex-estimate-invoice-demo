@@ -17,6 +17,19 @@ let lines = [
   { name: "改善レポート作成", qty: 1, price: 30000 },
 ];
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function nl2br(value) {
+  return escapeHtml(value).replace(/\n/g, "<br />");
+}
+
 function yen(value) {
   return new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY" }).format(Math.round(value || 0));
 }
@@ -63,9 +76,9 @@ function renderLineEditor() {
     .map(
       (line, index) => `
         <div class="line-row">
-          <input aria-label="項目名" data-index="${index}" data-field="name" value="${line.name}" />
-          <input aria-label="数量" data-index="${index}" data-field="qty" type="number" min="0" value="${line.qty}" />
-          <input aria-label="単価" data-index="${index}" data-field="price" type="number" min="0" value="${line.price}" />
+          <input aria-label="項目名" data-index="${index}" data-field="name" value="${escapeHtml(line.name)}" />
+          <input aria-label="数量" data-index="${index}" data-field="qty" type="number" min="0" value="${escapeHtml(line.qty)}" />
+          <input aria-label="単価" data-index="${index}" data-field="price" type="number" min="0" value="${escapeHtml(line.price)}" />
           <button class="icon-button" type="button" data-remove="${index}">削除</button>
         </div>
       `,
@@ -78,27 +91,27 @@ function renderDocument(type, data, number) {
   return `
     <div class="doc-head">
       <div>
-        <div class="doc-type">${type}</div>
-        <div class="doc-number">No. ${number}</div>
+        <div class="doc-type">${escapeHtml(type)}</div>
+        <div class="doc-number">No. ${escapeHtml(number)}</div>
       </div>
       <div class="doc-meta">
-        発行日: ${data.issueDate}<br />
-        支払期限: ${data.dueDate}
+        発行日: ${escapeHtml(data.issueDate)}<br />
+        支払期限: ${escapeHtml(data.dueDate)}
       </div>
     </div>
     <div class="issuer-block">
-      <strong>${data.issuer}</strong>
-      <span>${String(data.issuerInfo || "").replace(/\n/g, "<br />")}</span>
+      <strong>${escapeHtml(data.issuer)}</strong>
+      <span>${nl2br(data.issuerInfo)}</span>
     </div>
-    <div class="doc-client">${data.client} 御中</div>
-    <p class="doc-meta">${data.project}</p>
+    <div class="doc-client">${escapeHtml(data.client)} 御中</div>
+    <p class="doc-meta">${escapeHtml(data.project)}</p>
     <table class="doc-table">
       <thead><tr><th>項目</th><th>数量</th><th>単価</th><th>金額</th></tr></thead>
       <tbody>
         ${lines
           .map((line) => {
             const amount = Number(line.qty || 0) * Number(line.price || 0);
-            return `<tr><td>${line.name}</td><td>${line.qty}</td><td>${yen(line.price)}</td><td>${yen(amount)}</td></tr>`;
+            return `<tr><td>${escapeHtml(line.name)}</td><td>${escapeHtml(line.qty)}</td><td>${yen(line.price)}</td><td>${yen(amount)}</td></tr>`;
           })
           .join("")}
       </tbody>
@@ -110,8 +123,8 @@ function renderDocument(type, data, number) {
       <div class="grand"><span>税込合計</span><strong>${yen(total.total)}</strong></div>
     </div>
     <div class="note-grid">
-      <div><strong>振込先</strong><p>${String(data.bank || "").replace(/\n/g, "<br />")}</p></div>
-      <div><strong>備考</strong><p>${String(data.notes || "").replace(/\n/g, "<br />")}</p></div>
+      <div><strong>振込先</strong><p>${nl2br(data.bank)}</p></div>
+      <div><strong>備考</strong><p>${nl2br(data.notes)}</p></div>
     </div>
   `;
 }
