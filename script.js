@@ -7,7 +7,6 @@ const sampleButton = document.querySelector("#sampleButton");
 const copyButton = document.querySelector("#copyButton");
 const printButton = document.querySelector("#printButton");
 const addLineButton = document.querySelector("#addLineButton");
-const clearDataButton = document.querySelector("#clearDataButton");
 const lineEditor = document.querySelector("#lineEditor");
 const tabButtons = document.querySelectorAll(".tab");
 const clientTabs = document.querySelector("#clientTabs");
@@ -71,7 +70,9 @@ function loadState() {
 }
 
 function totals(data) {
-  const subtotal = lines.reduce((sum, line) => sum + Number(line.qty || 0) * Number(line.price || 0), 0);
+  const subtotal = lines
+    .filter((line) => !line.excluded)
+    .reduce((sum, line) => sum + Number(line.qty || 0) * Number(line.price || 0), 0);
   const tax = subtotal * Number(data.tax || 0);
   const withholding = subtotal * Number(data.withholding || 0);
   const total = subtotal + tax - withholding;
@@ -82,11 +83,14 @@ function renderLineEditor() {
   lineEditor.innerHTML = lines
     .map(
       (line, index) => `
-        <div class="line-row">
+        <div class="line-row${line.excluded ? " is-excluded" : ""}">
           <input aria-label="項目名" data-index="${index}" data-field="name" value="${escapeHtml(line.name)}" />
           <input aria-label="数量" data-index="${index}" data-field="qty" type="number" min="0" value="${escapeHtml(line.qty)}" />
           <input aria-label="単価" data-index="${index}" data-field="price" type="number" min="0" value="${escapeHtml(line.price)}" />
-          <button class="icon-button" type="button" data-remove="${index}">削除</button>
+          <div class="line-controls">
+            <button class="toggle-button" type="button" data-toggle="${index}">${line.excluded ? "未反映" : "反映中"}</button>
+            <button class="icon-button" type="button" data-remove="${index}">削除</button>
+          </div>
         </div>
       `,
     )
@@ -119,6 +123,7 @@ function renderDocument(type, data, number) {
       <thead><tr><th>項目</th><th>数量</th><th>単価</th><th>金額</th></tr></thead>
       <tbody>
         ${lines
+          .filter((line) => !line.excluded)
           .map((line) => {
             const amount = Number(line.qty || 0) * Number(line.price || 0);
             return `<tr><td>${escapeHtml(line.name)}</td><td>${escapeHtml(line.qty)}</td><td>${yen(line.price)}</td><td>${yen(amount)}</td></tr>`;
@@ -156,7 +161,7 @@ function copySummary() {
   const text = [
     `${data.client} 御中`,
     "",
-    ...lines.map((line) => `- ${line.name}: ${line.qty} x ${yen(line.price)}`),
+    ...lines.filter((line) => !line.excluded).map((line) => `- ${line.name}: ${line.qty} x ${yen(line.price)}`),
     "",
     `ご請求金額: ${yen(total.total)}`,
     `振込期日: ${data.dueDate}`,
@@ -289,9 +294,14 @@ lineEditor.addEventListener("input", (event) => {
 });
 
 lineEditor.addEventListener("click", (event) => {
-  const index = Number(event.target.dataset.remove);
-  if (!Number.isNaN(index)) {
-    lines.splice(index, 1);
+  const removeIndex = Number(event.target.dataset.remove);
+  const toggleIndex = Number(event.target.dataset.toggle);
+  if (event.target.dataset.remove !== undefined && !Number.isNaN(removeIndex)) {
+    lines.splice(removeIndex, 1);
+    renderLineEditor();
+    generateDocuments();
+  } else if (event.target.dataset.toggle !== undefined && !Number.isNaN(toggleIndex)) {
+    lines[toggleIndex].excluded = !lines[toggleIndex].excluded;
     renderLineEditor();
     generateDocuments();
   }
@@ -320,14 +330,6 @@ copyButton.addEventListener("click", () => {
   flashButton(copyButton, "コピーしました ✓");
 });
 printButton.addEventListener("click", () => window.print());
-clearDataButton.addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(CLIENTS_KEY);
-  clients = [];
-  activeClientId = null;
-  renderClientTabs();
-  flashButton(clearDataButton, "削除しました");
-});
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {

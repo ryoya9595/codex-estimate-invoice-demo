@@ -190,13 +190,41 @@ textarea {
 
 .line-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) 72px 112px 64px;
+  grid-template-columns: minmax(0, 1.4fr) 52px 90px 66px;
   gap: 8px;
+  align-items: stretch;
+}
+
+.line-row.is-excluded input {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.line-controls {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+}
+
+.line-controls button {
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.toggle-button {
+  background: #e3f2ee;
+  color: var(--green);
+}
+
+.line-row.is-excluded .toggle-button {
+  background: #f3e0e0;
+  color: #b04a4a;
 }
 
 .icon-button {
-  min-height: 40px;
-  padding: 0;
   background: #edf1f4;
   color: var(--muted);
   font-size: 12px;
@@ -494,6 +522,11 @@ button.flashed {
 }
 
 @media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
   body {
     background: #fff;
   }
@@ -504,23 +537,26 @@ button.flashed {
 
   .shell {
     width: auto;
+    margin: 0;
     padding: 0;
   }
 
-  .layout {
-    display: block;
-  }
-
+  .layout,
   .preview-area {
     display: block;
   }
 
-  .paper {
-    display: block !important;
+  /* 表示中の書類だけを1枚で印刷する */
+  .paper.is-hidden {
+    display: none !important;
+  }
+
+  .paper:not(.is-hidden) {
+    display: block;
     min-height: auto;
     border: 0;
+    border-radius: 0;
     box-shadow: none;
-    page-break-after: always;
-    padding: 0;
+    padding: 14mm;
   }
 }
