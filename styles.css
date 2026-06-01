@@ -208,10 +208,20 @@ textarea {
 }
 
 .actions {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 16px;
+}
+
+.actions button {
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+button.flashed {
+  background: var(--green);
+  color: #fff;
 }
 
 .preview-area {
@@ -256,11 +266,46 @@ textarea {
 .issuer-block {
   display: grid;
   justify-items: end;
-  gap: 4px;
-  margin-top: 18px;
+  gap: 3px;
   color: var(--muted);
   font-size: 12px;
   text-align: right;
+}
+
+.issuer-block strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.amount-due {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 14px 18px;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  background: #f4f7f9;
+}
+
+.amount-due .amount-label {
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.amount-due strong {
+  color: var(--green);
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.note-grid .pay-due {
+  margin: 8px 0 6px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .doc-head {

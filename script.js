@@ -89,23 +89,26 @@ function renderLineEditor() {
 
 function renderDocument(type, data, number) {
   const total = totals(data);
+  const amountLabel = type.includes("請求") ? "ご請求金額" : "お見積金額";
   return `
     <div class="doc-head">
       <div>
         <div class="doc-type">${escapeHtml(type)}</div>
         <div class="doc-number">No. ${escapeHtml(number)}</div>
       </div>
-      <div class="doc-meta">
-        発行日: ${escapeHtml(data.issueDate)}<br />
-        支払期限: ${escapeHtml(data.dueDate)}
+      <div class="issuer-block">
+        <strong>${escapeHtml(data.issuer)}</strong>
+        <span>${nl2br(data.issuerInfo)}</span>
+        ${data.regNumber ? `<span>登録番号: ${escapeHtml(data.regNumber)}</span>` : ""}
+        ${data.tel ? `<span>TEL: ${escapeHtml(data.tel)}</span>` : ""}
+        <span>発行日: ${escapeHtml(data.issueDate)}</span>
       </div>
     </div>
-    <div class="issuer-block">
-      <strong>${escapeHtml(data.issuer)}</strong>
-      <span>${nl2br(data.issuerInfo)}</span>
-    </div>
     <div class="doc-client">${escapeHtml(data.client)} 御中</div>
-    <p class="doc-meta">${escapeHtml(data.project)}</p>
+    <div class="amount-due">
+      <span class="amount-label">${amountLabel}（税込）</span>
+      <strong>${yen(total.total)}</strong>
+    </div>
     <table class="doc-table">
       <thead><tr><th>項目</th><th>数量</th><th>単価</th><th>金額</th></tr></thead>
       <tbody>
@@ -124,7 +127,11 @@ function renderDocument(type, data, number) {
       <div class="grand"><span>税込合計</span><strong>${yen(total.total)}</strong></div>
     </div>
     <div class="note-grid">
-      <div><strong>振込先</strong><p>${nl2br(data.bank)}</p></div>
+      <div>
+        <strong>振込先</strong>
+        <p class="pay-due">振込期日：${escapeHtml(data.dueDate)}</p>
+        <p>${nl2br(data.bank)}</p>
+      </div>
       <div><strong>備考</strong><p>${nl2br(data.notes)}</p></div>
     </div>
   `;
@@ -143,15 +150,25 @@ function copySummary() {
   const total = totals(data);
   const text = [
     `${data.client} 御中`,
-    data.project,
     "",
     ...lines.map((line) => `- ${line.name}: ${line.qty} x ${yen(line.price)}`),
     "",
-    `合計: ${yen(total.total)}`,
-    `支払期限: ${data.dueDate}`,
+    `ご請求金額: ${yen(total.total)}`,
+    `振込期日: ${data.dueDate}`,
   ].join("\n");
   navigator.clipboard?.writeText(text);
   status.textContent = "COPIED";
+}
+
+function flashButton(btn, text) {
+  if (!btn) return;
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+  btn.textContent = text;
+  btn.classList.add("flashed");
+  setTimeout(() => {
+    btn.textContent = btn.dataset.label;
+    btn.classList.remove("flashed");
+  }, 1600);
 }
 
 form.issueDate.value = new Date().toISOString().slice(0, 10);
@@ -160,10 +177,13 @@ loadState();
 renderLineEditor();
 generateDocuments();
 
+const generateButton = form.querySelector('button[type="submit"]');
+
 form.addEventListener("input", generateDocuments);
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   generateDocuments();
+  flashButton(generateButton, "生成しました ✓");
 });
 
 lineEditor.addEventListener("input", (event) => {
@@ -192,7 +212,6 @@ addLineButton.addEventListener("click", () => {
 
 sampleButton.addEventListener("click", () => {
   form.client.value = "株式会社アベプラニング";
-  form.project.value = "YouTube導線改善コンサルティング";
   lines = [
     { name: "競合YouTube分析", qty: 1, price: 120000 },
     { name: "動画構成改善", qty: 1, price: 150000 },
@@ -203,7 +222,10 @@ sampleButton.addEventListener("click", () => {
   generateDocuments();
 });
 
-copyButton.addEventListener("click", copySummary);
+copyButton.addEventListener("click", () => {
+  copySummary();
+  flashButton(copyButton, "コピーしました ✓");
+});
 printButton.addEventListener("click", () => window.print());
 clearDataButton.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
