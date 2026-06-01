@@ -1,5 +1,5 @@
 const STORAGE_KEY = "codex-estimate-invoice-demo-v2";
-const status = document.querySelector("#status");
+const CLIENTS_KEY = "codex-estimate-invoice-clients-v1";
 const form = document.querySelector("#invoiceForm");
 const estimateDoc = document.querySelector("#estimateDoc");
 const invoiceDoc = document.querySelector("#invoiceDoc");
@@ -10,6 +10,12 @@ const addLineButton = document.querySelector("#addLineButton");
 const clearDataButton = document.querySelector("#clearDataButton");
 const lineEditor = document.querySelector("#lineEditor");
 const tabButtons = document.querySelectorAll(".tab");
+const clientTabs = document.querySelector("#clientTabs");
+const saveClientButton = document.querySelector("#saveClientButton");
+const newClientButton = document.querySelector("#newClientButton");
+
+let clients = [];
+let activeClientId = null;
 
 let lines = [
   { name: "競合調査", qty: 1, price: 80000 },
@@ -141,7 +147,6 @@ function generateDocuments() {
   const data = readForm();
   estimateDoc.innerHTML = renderDocument("御見積書", data, "EST-2026-0601");
   invoiceDoc.innerHTML = renderDocument("御請求書", data, "INV-2026-0601");
-  status.textContent = "SAVED";
   saveState();
 }
 
@@ -157,7 +162,6 @@ function copySummary() {
     `振込期日: ${data.dueDate}`,
   ].join("\n");
   navigator.clipboard?.writeText(text);
-  status.textContent = "COPIED";
 }
 
 function flashButton(btn, text) {
@@ -171,19 +175,108 @@ function flashButton(btn, text) {
   }, 1600);
 }
 
+// ===== 取引先レジストリ =====
+function loadClients() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CLIENTS_KEY) || "[]");
+    if (Array.isArray(saved)) clients = saved;
+  } catch {
+    clients = [];
+  }
+}
+
+function persistClients() {
+  localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+}
+
+function renderClientTabs() {
+  if (!clients.length) {
+    clientTabs.innerHTML = `<span class="client-empty">保存した取引先がここに並びます</span>`;
+    return;
+  }
+  clientTabs.innerHTML = clients
+    .map(
+      (c) => `
+      <span class="client-tab${c.id === activeClientId ? " is-active" : ""}">
+        <button type="button" class="client-pick" data-pick="${escapeHtml(c.id)}">${escapeHtml(c.name || "（無名）")}</button>
+        <button type="button" class="client-del" data-del="${escapeHtml(c.id)}" aria-label="削除">×</button>
+      </span>`,
+    )
+    .join("");
+}
+
+function saveCurrentClient() {
+  const data = readForm();
+  const name = String(data.client || "").trim();
+  if (!name) {
+    flashButton(saveClientButton, "会社名を入力");
+    return;
+  }
+  // 会社名が一致すれば上書き、なければ新しい取引先として追加
+  const byName = clients.findIndex((c) => c.name === name);
+  let entry;
+  if (byName >= 0) {
+    entry = { id: clients[byName].id, name, data, lines: lines.map((l) => ({ ...l })) };
+    clients[byName] = entry;
+  } else {
+    entry = { id: "c" + Date.now(), name, data, lines: lines.map((l) => ({ ...l })) };
+    clients.push(entry);
+  }
+  activeClientId = entry.id;
+  persistClients();
+  renderClientTabs();
+  flashButton(saveClientButton, "保存しました ✓");
+}
+
+function selectClient(id) {
+  const c = clients.find((x) => x.id === id);
+  if (!c) return;
+  activeClientId = id;
+  Object.entries(c.data || {}).forEach(([key, value]) => {
+    if (form.elements[key]) form.elements[key].value = value;
+  });
+  if (Array.isArray(c.lines) && c.lines.length) lines = c.lines.map((l) => ({ ...l }));
+  renderLineEditor();
+  generateDocuments();
+  renderClientTabs();
+}
+
+function deleteClient(id) {
+  clients = clients.filter((c) => c.id !== id);
+  if (activeClientId === id) activeClientId = null;
+  persistClients();
+  renderClientTabs();
+}
+
+function newClient() {
+  activeClientId = null;
+  form.client.value = "";
+  generateDocuments();
+  renderClientTabs();
+  form.client.focus();
+}
+
 form.issueDate.value = new Date().toISOString().slice(0, 10);
 form.dueDate.value = addDays(30);
 loadState();
+loadClients();
 renderLineEditor();
 generateDocuments();
-
-const generateButton = form.querySelector('button[type="submit"]');
+renderClientTabs();
 
 form.addEventListener("input", generateDocuments);
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   generateDocuments();
-  flashButton(generateButton, "生成しました ✓");
+});
+
+saveClientButton.addEventListener("click", saveCurrentClient);
+newClientButton.addEventListener("click", newClient);
+clientTabs.addEventListener("click", (event) => {
+  const del = event.target.dataset.del;
+  const pick = event.target.dataset.pick;
+  if (del) deleteClient(del);
+  else if (pick) selectClient(pick);
 });
 
 lineEditor.addEventListener("input", (event) => {
@@ -229,7 +322,11 @@ copyButton.addEventListener("click", () => {
 printButton.addEventListener("click", () => window.print());
 clearDataButton.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
-  status.textContent = "CLEARED";
+  localStorage.removeItem(CLIENTS_KEY);
+  clients = [];
+  activeClientId = null;
+  renderClientTabs();
+  flashButton(clearDataButton, "削除しました");
 });
 
 tabButtons.forEach((button) => {

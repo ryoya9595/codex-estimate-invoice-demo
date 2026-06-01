@@ -219,9 +219,90 @@ textarea {
   white-space: nowrap;
 }
 
+.actions button:last-child {
+  grid-column: 1 / -1;
+}
+
 button.flashed {
   background: var(--green);
   color: #fff;
+}
+
+/* ===== 取引先レジストリ ===== */
+.client-bar {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.section-title.compact-top {
+  margin-bottom: 12px;
+}
+
+.client-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.client-tab {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef3f5;
+}
+
+.client-tab.is-active {
+  border-color: var(--green);
+  background: #e6f4f1;
+}
+
+.client-pick {
+  min-height: 34px;
+  background: transparent;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 4px 0 14px;
+  border-radius: 0;
+}
+
+.client-tab.is-active .client-pick {
+  color: var(--green);
+}
+
+.client-del {
+  min-height: 34px;
+  width: 30px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  border-radius: 0;
+}
+
+.client-del:hover {
+  color: #c0392b;
+}
+
+.client-empty {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.client-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.client-bar-actions button {
+  min-height: 36px;
+  font-size: 12px;
+  padding: 0 14px;
 }
 
 .preview-area {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>見積書・請求書 自動生成</title>
+    <title>見積書・請求書 自動生成ツール</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -12,18 +12,29 @@
       <header class="hero no-print">
         <div>
           <p class="eyebrow">Invoice Studio</p>
-          <h1>見積書・請求書 自動生成</h1>
+          <h1>見積書・請求書 自動生成ツール</h1>
           <p class="lead">案件情報を入力するだけで、見積書と請求書を同時に作成。入力内容はブラウザ内に保存されます。</p>
           <div class="privacy-note">
             外部送信なし。入力内容はこのブラウザ内にのみ保存されます。共有PCでは使用後に保存データを削除してください。
             <button type="button" id="clearDataButton">保存データを削除</button>
           </div>
         </div>
-        <div class="doc-status" id="status">READY</div>
       </header>
 
       <section class="layout">
         <form class="control-panel no-print" id="invoiceForm">
+          <div class="client-bar">
+            <div class="section-title compact-top">
+              <span>★</span>
+              <h2>取引先</h2>
+            </div>
+            <div class="client-tabs" id="clientTabs"></div>
+            <div class="client-bar-actions">
+              <button type="button" class="secondary" id="saveClientButton">＋ この取引先を保存</button>
+              <button type="button" class="secondary" id="newClientButton">新規</button>
+            </div>
+          </div>
+
           <div class="section-title">
             <span>01</span>
             <h2>基本情報</h2>
@@ -101,17 +112,16 @@ contact@example.com</textarea>
             <button class="secondary" type="button" id="sampleButton">サンプル入力</button>
             <button class="secondary" type="button" id="copyButton">内容をコピー</button>
             <button class="secondary" type="button" id="printButton">印刷 / PDF</button>
-            <button type="submit">書類を生成</button>
           </div>
         </form>
 
         <section class="preview-area">
           <div class="doc-tabs no-print">
-            <button class="tab is-active" type="button" data-doc="estimate">見積書</button>
-            <button class="tab" type="button" data-doc="invoice">請求書</button>
+            <button class="tab" type="button" data-doc="estimate">見積書</button>
+            <button class="tab is-active" type="button" data-doc="invoice">請求書</button>
           </div>
-          <article class="paper" id="estimateDoc"></article>
-          <article class="paper invoice-paper is-hidden" id="invoiceDoc"></article>
+          <article class="paper is-hidden" id="estimateDoc"></article>
+          <article class="paper invoice-paper" id="invoiceDoc"></article>
         </section>
       </section>
     </main>
